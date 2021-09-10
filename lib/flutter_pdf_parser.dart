@@ -25,35 +25,67 @@ class Flutter_pdf {
 }
 
 class PDFPage extends StatelessWidget {
-  PDFPage(int index) {}
+  const PDFPage(
+    int index, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(width: 0.2, color: Colors.black),
+        border: Border.all(width: 1, color: Colors.grey),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Stack(),
-      ),
+      child: Stack(),
     );
   }
 }
 
 class PDFBook extends StatelessWidget {
   Flutter_pdf? flutterpdf;
+  final String id;
+  final String token;
+  final Uint8List bytes;
+  final String title;
 
-  PDFBook(Uint8List bytes) {
+  PDFBook({
+    Key? key,
+    required this.id,
+    required this.token,
+    required this.bytes,
+    required this.title,
+  }) : super(key: key) {
     flutterpdf = Flutter_pdf(bytes);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Column(
-      children: [for (var i = 0; i < flutterpdf!.totalpages; ++i) PDFPage(flutterpdf!.getPageContent(i))],
-    ));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 128.0 * 4.0),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0) + MediaQuery.of(context).viewPadding,
+            children: [
+              const SizedBox(height: 16.0),
+              for (var i = 0; i < flutterpdf!.totalpages; ++i) ...[
+                AspectRatio(
+                  // aspectRatio: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? 4 / 3 : 1 / 2,
+                  aspectRatio: 1 / 1.4142,
+                  child: PDFPage(
+                    flutterpdf!.getPageContent(i),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
