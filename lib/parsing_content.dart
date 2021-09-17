@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_pdf_parser/pagetree.dart';
 import 'package:flutter_pdf_parser/parse_object.dart';
+import 'package:flutter_pdf_parser/pdf_object.dart';
 
 const List<String> textStateList = ['Tc', 'Tw', 'Tz', 'TL', 'Tf', 'Tr', 'Ts'];
 
@@ -86,6 +88,7 @@ class FontContent {
 }
 
 class TextContent {
+  Ressource dictionnary;
   List<int> textMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 1];
   List<int> textLineMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 1];
   List<int> textRenderMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 1];
@@ -94,7 +97,8 @@ class TextContent {
   String font = "";
   int sizeFont = 0;
 
-  TextContent(List<String> line) {
+  TextContent(List<String> line, this.dictionnary) {
+
     var i = 0;
     List<String> cmd = [];
     while (i < line.length) {
@@ -104,7 +108,7 @@ class TextContent {
             font = cmd[0];
             sizeFont = int.parse(cmd[1]);
             break;
-          case 'Tm':
+          /*case 'Tm':
             textMatrix[0] = int.parse(cmd[0]);
             textMatrix[1] = int.parse(cmd[1]);
             textMatrix[3] = int.parse(cmd[2]);
@@ -138,12 +142,21 @@ class TextContent {
             textLineMatrix[6] = textMatrix[6];
             textLineMatrix[7] = textMatrix[7];
             textLineMatrix[8] = textMatrix[8];
-            break;
+            break;*/
           case 'TD':
             break;
           case 'TJ':
-          case 'Tj':
+            print('content');
+            print(cmd[0]);
             stringLine.add(parseString(splitIt(cmd[0].substring(1, cmd[0].length - 1))));
+            print(stringLine.join('\n'));
+            print('done');
+            break;
+          case 'Tj':
+            print('content');
+            print(cmd[0]);
+            stringLine.add(parseString(splitIt(cmd[0].substring(1, cmd[0].length - 1))));
+            print('done');
             break;
           case 'RG':
             break;
@@ -152,20 +165,25 @@ class TextContent {
           case 'BMC':
             var copy = cmd;
             cmd = [];
-            while (line[i] != 'EMC') cmd.add(line[i]);
-            markNode.add(new MarkContent.BMC(copy, cmd));
+            while (line[i] != 'EMC') {
+              cmd.add(line[i++]);
+            }
+            markNode.add(MarkContent.BMC(copy, cmd, this.dictionnary));
             break;
           case 'BDC':
             var copy = cmd;
             cmd = [];
-            while (line[i] != 'EMC') cmd.add(line[i]);
-            markNode.add(new MarkContent.BDC(copy, cmd));
+            while (line[i] != 'EMC') {
+              cmd.add(line[i++]);
+            }
+            markNode.add(MarkContent.BDC(copy, cmd, this.dictionnary));
             break;
           default:
         }
         cmd = [];
-      } else
+      } else {
         cmd.add(line[i]);
+      }
       ++i;
     }
   }
@@ -173,10 +191,16 @@ class TextContent {
 
 String parseString(List<String> cmd) {
   String dest = "";
+  print("parse");
+  print(cmd.join(" "));
   for (var i in cmd) {
-    if (i[0] == '(') dest += i.substring(1, i.length - 2);
+    if (i[0] == '(') {
+      dest += i.substring(1, i.length - 1);
+    }
     if (i[0] == '<') {
-      for (var value = 0; value < i.length; value += 2) dest += String.fromCharCode(int.parse((i[value] + i[value + 1]), radix: 16));
+      for (var value = 1; value < i.length - 1; value += 2) {
+        //dest += String.fromCharCode(int.parse((i[value] + i[value + 1]), radix: 16));
+      }
     }
   }
   return (dest);
@@ -188,12 +212,13 @@ class Position {
 
 class ParsingContent {
   Ressource dictionnary;
+  List<bool> isMark = [];
   List<MarkContent> markNode = [];
   List<TextContent> textNode = [];
   List<Shape> shapeNode = [];
   List<PathObject> pathNode = [];
-  GraphicState gstate = new GraphicState();
-  TextState tstate = new TextState();
+  GraphicState gstate = GraphicState();
+  TextState tstate = TextState();
   ParsingContent(List<String> src, this.dictionnary) {
     var i = 0;
     List<String> cmd = [];
@@ -210,9 +235,11 @@ class ParsingContent {
             gstate.popstate();
             break;
           case 're':
-            while (cmdList.containsKey(src[i]) && cmdList[src[i]] != 12) cmd.add(src[i++]);
+            while (cmdList.containsKey(src[i]) && cmdList[src[i]] != 12) {
+              cmd.add(src[i++]);
+            }
             cmd.add(src[i]);
-            pathNode.add(new PathObject(cmd));
+            pathNode.add(PathObject(cmd));
             break;
           case 'RG':
             break;
@@ -224,40 +251,98 @@ class ParsingContent {
           case 'BMC':
             var copy = cmd;
             cmd = [];
-            while (src[i] != 'EMC') cmd.add(src[i]);
-            markNode.add(new MarkContent.BMC(copy, cmd));
+            while (src[i] != 'EMC') {
+              cmd.add(src[i++]);
+            }
+            markNode.add(MarkContent.BMC(copy, cmd, dictionnary));
+            isMark.add(true);
             break;
           case 'BDC':
             var copy = cmd;
             cmd = [];
-            while (src[i] != 'EMC') cmd.add(src[i]);
-            markNode.add(new MarkContent.BDC(copy, cmd));
+            while (src[i] != 'EMC') {
+              cmd.add(src[i++]);
+            }
+            print(cmd.join(" "));
+            markNode.add(MarkContent.BDC(copy, cmd, dictionnary));
+            print('done');
+            isMark.add(true);
             break;
           default:
         }
         if (cmdList[src[i]] == 9) {
-          tstate.setvalue(int.parse(cmd[0]), textStateList.indexOf(src[i]));
+          //tstate.setvalue(int.parse(cmd[0]), textStateList.indexOf(src[i]));
         }
         if (src[i] == 'BT') {
           i += 1;
-          while (src[i] != 'ET') cmd.add(src[i++]);
-          textNode.add(new TextContent(cmd));
+          while (src[i] != 'ET') {
+            cmd.add(src[i++]);
+          }
+          textNode.add(TextContent(cmd, dictionnary));
+          isMark.add(false);
         }
         cmd = [];
-      } else
+      } else {
         cmd.add(src[i]);
+      }
       ++i;
     }
   }
 }
 
 class MarkContent {
-  MarkContent.BMC(List<String> tag, List<String> cmd);
+  Ressource dictionnary;
+  Namepdf? name;
+  Dictionnary? properties;
+  List<TextContent> textNode = [];
+  bool isImage = false;
+  Widget image = Text('tmp');
 
-  MarkContent.BDC(List<String> copy, List<String> cmd);
+  MarkContent.BMC(List<String> tag, List<String> cmd, this.dictionnary) {
+    name = Namepdf(tag[0]);
+    createcontent(cmd);
+  }
+
+  MarkContent.BDC(List<String> copy, List<String> cmd, this.dictionnary) {
+    name = Namepdf(copy[0]);
+    properties = Dictionnary(copy[1]);
+    createcontent(cmd);
+  }
+
+  void createcontent(List<String> src) {
+    var i = 0;
+    List<String> cmd = [];
+
+    while (i < src.length) {
+      if (cmdList.containsKey(src[i])) {
+        if (src[i] == 'BT') {
+          i += 1;
+          while (src[i] != 'ET') {
+            cmd.add(src[i++]);
+          }
+          textNode.add(TextContent(cmd, dictionnary));
+        } else if (src[i] == 'Do') {
+          var tmp = dictionnary.xobj;
+          for (var j in tmp) {
+            print(j.id + " == " + cmd[0]);
+            if (j.id == cmd[0].substring(1)) {
+              if (j.tmp != null) {
+                image = j.tmp!;
+                isImage = true;
+              }
+            }
+          }
+        }
+        cmd = [];
+      } else {
+        cmd.add(src[i]);
+      }
+      ++i;
+    }
+  }
 }
 
-// Text State Value
+// Text State Valueprint("hum");
 //
 // leading is the diff between the base of two lines
 //   int charspace = 0;

@@ -39,7 +39,7 @@ class CompleteObject {
     while (!isCatalog(src.objContent[i])) ++i;
     catalog = new Catalog(src.objContent[i]);
     rootTree = new PageTree(objectFromId(catalog!.pageRoot, src.objContent), src);
-    metadata = new MetaDataPdf(objectFromId(catalog!.metadata, src.objContent));
+    //metadata = new MetaDataPdf(objectFromId(catalog!.metadata, src.objContent));
     rootTree!.fillTree(src);
   }
 

@@ -8,8 +8,10 @@ import 'package:flutter_pdf_parser/pdf_object.dart';
 
 IdObject objectFromId(int id, List<IdObject> list) {
   var i = 0;
-  while (i < list.length && list[i].id != id) ++i;
-  if (i >= list.length) return throw ("non valid link");
+  while (i < list.length && list[i].id != id) {
+    ++i;
+  }
+  if (i >= list.length) return throw ("not a valid link");
   return (list[i]);
 }
 
@@ -85,9 +87,9 @@ class XObject {
   double height = 0;
   XObject(this.id, IdObject objContent) {
     spec = objContent.objContent[0] as Dictionnary?;
-    (objContent.objContent[1] as Stream).content.runes.forEach((int rune) {
+    for (var rune in (objContent.objContent[1] as Stream).content.runes) {
       content.add(rune);
-    });
+    }
     spec!.content.forEach((key, value) {
       switch (key) {
         case 'Width':
@@ -100,10 +102,10 @@ class XObject {
       }
     });
     if ((spec!.content['Filter'] as Namepdf).value == 'DCTDecode') {
-      tmp = new Image.memory(content as Uint8List, width: this.width, height: this.height);
+      tmp = Image.memory(Uint8List.fromList(content), width: width, height: height);
     } else if ((spec!.content['Filter'] as Namepdf).value == 'FlateDecode') {
       var stream = String.fromCharCodes(zlib.decode(content));
-      rec = new ParsingContent(splitIt(stream), new Ressource.empty());
+      rec = ParsingContent(splitIt(stream), Ressource.empty());
     }
   }
 }
@@ -151,7 +153,7 @@ class Content {
         break;
       default:
     }
-    content = new ParsingContent(splitIt(convertedStream), ressource);
+    content = ParsingContent(splitIt(convertedStream), ressource);
   }
 }
 
@@ -179,10 +181,15 @@ List<String> splitIt(String src) {
       tmp = '(';
       ++i;
       while (count != 0) {
-        tmp += src[i];
-        if (src[i] == '(') ++count;
-        if (src[i] == ')') --count;
-        ++i;
+        if (src[i] == '\\') {
+          tmp += src[i + 1];
+          i += 2;
+        } else {
+          tmp += src[i];
+          if (src[i] == '(') ++count;
+          if (src[i] == ')') --count;
+          ++i;
+        }
       }
       dest.add(tmp);
       tmp = "";
@@ -191,15 +198,27 @@ List<String> splitIt(String src) {
       tmp = '[';
       ++i;
       while (count != 0) {
-        tmp += src[i];
-        if (src[i] == '[') ++count;
-        if (src[i] == ']') --count;
-        ++i;
+        if (src[i] == '\\') {
+          tmp += src[i + 1];
+          i += 2;
+        } else {
+          tmp += src[i];
+          if (src[i] == '[') ++count;
+          if (src[i] == ']') --count;
+          ++i;
+        }
       }
       dest.add(tmp);
       tmp = "";
     } else {
-      while (!isWhiteSpace(src[i])) tmp += src[i++];
+      while (!isWhiteSpace(src[i]) && src[i] != '[' && src[i] != '<' && src[i] != '(') {
+        if (src[i] == '\\') {
+          tmp += src[i + 1];
+          i += 2;
+        } else {
+          tmp += src[i++];
+        }
+      }
       dest.add(tmp);
       tmp = "";
     }
@@ -218,14 +237,14 @@ class PageNode {
         case 'Type':
           break;
         case 'Resources':
-          ressource = new Ressource(value as Dictionnary, parse);
+          ressource = Ressource(value as Dictionnary, parse);
           break;
         case 'Contents':
           tmp = objectFromId((value as Linkpdf).nbr, parse.objContent);
           break;
       }
     });
-    content = new Content(tmp, ressource!, parse);
+    content = Content(tmp, ressource!, parse);
   }
 }
 
@@ -245,7 +264,9 @@ class PageTree {
           nbr = (value as Numeric).type;
           break;
         case 'Kids':
-          for (var item in (value as Arraypdf).array) childId.add((item as Linkpdf).nbr);
+          for (var item in (value as Arraypdf).array) {
+            childId.add((item as Linkpdf).nbr);
+          }
           break;
         default:
       }
@@ -255,10 +276,10 @@ class PageTree {
     Dictionnary value = obj.objContent[0] as Dictionnary;
     Namepdf type = value.content['Type'] as Namepdf;
     if (type.value == 'Pages') {
-      child.add(new PageTree(obj, parse));
+      child.add(PageTree(obj, parse));
       ispage.add(false);
     } else if (type.value == 'Page') {
-      leaf.add(new PageNode(obj, parse));
+      leaf.add(PageNode(obj, parse));
       ispage.add(true);
     } else
       throw ('incorect page tree');
