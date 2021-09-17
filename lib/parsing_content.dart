@@ -146,17 +146,10 @@ class TextContent {
           case 'TD':
             break;
           case 'TJ':
-            print('content');
-            print(cmd[0]);
             stringLine.add(parseString(splitIt(cmd[0].substring(1, cmd[0].length - 1))));
-            print(stringLine.join('\n'));
-            print('done');
             break;
           case 'Tj':
-            print('content');
-            print(cmd[0]);
             stringLine.add(parseString(splitIt(cmd[0].substring(1, cmd[0].length - 1))));
-            print('done');
             break;
           case 'RG':
             break;
@@ -191,8 +184,6 @@ class TextContent {
 
 String parseString(List<String> cmd) {
   String dest = "";
-  print("parse");
-  print(cmd.join(" "));
   for (var i in cmd) {
     if (i[0] == '(') {
       dest += i.substring(1, i.length - 1);
@@ -263,9 +254,7 @@ class ParsingContent {
             while (src[i] != 'EMC') {
               cmd.add(src[i++]);
             }
-            print(cmd.join(" "));
             markNode.add(MarkContent.BDC(copy, cmd, dictionnary));
-            print('done');
             isMark.add(true);
             break;
           default:
@@ -324,7 +313,6 @@ class MarkContent {
         } else if (src[i] == 'Do') {
           var tmp = dictionnary.xobj;
           for (var j in tmp) {
-            print(j.id + " == " + cmd[0]);
             if (j.id == cmd[0].substring(1)) {
               if (j.tmp != null) {
                 image = j.tmp!;

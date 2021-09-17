@@ -19,7 +19,6 @@ class Flutter_pdf {
     ParseObject parseobj = ParseObject(bytes);
     completeObject = CompleteObject(parseobj);
     totalpages = completeObject!.rootTree!.getPageNumber();
-    print("number of pages = " + totalpages.toString());
   }
 
   List<Widget> getMarkContent(MarkContent mark) {
@@ -67,16 +66,18 @@ class PDFPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Container(
+    return ScrollConfiguration(behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false), child: Container(
       decoration: BoxDecoration(
         border: Border.all(width: 1, color: Colors.grey),
 
       ),
+     
      child: ListView (
        children: content,
      )
       ,
      // child: Stack(),
+    )
     );
   }
 }
