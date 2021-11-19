@@ -113,9 +113,7 @@ class _PDFBookState extends State<PDFBook> {
         bookmarkList.add(AlexandrioBookmark(
             pos: data[0],
             id: bookmarkList.length + 1,
-            status: () {
-              _removeIconFromList(bookmarkList.length + 1);
-            },
+            status: () {},
             redirect: () {
               _pdfRedirect(data[0]);
             },
@@ -149,9 +147,7 @@ class _PDFBookState extends State<PDFBook> {
       var tmp = AlexandrioBookmark(
           pos: cfi,
           id: _id,
-          status: () {
-            _removeIconFromList(_id);
-          },
+          status: () {},
           redirect: () {
             _pdfRedirect(cfi);
           },
@@ -162,10 +158,11 @@ class _PDFBookState extends State<PDFBook> {
     });
   }
 
-  void _removeIconFromList(int _id) {
+  void _removeIconFromList(int _id, String _dataId) {
     setState(() {
       bookmarkList.removeWhere((element) => element.id == _id);
     });
+    _alexandrioController.deleteUserData(widget.token, widget.library, widget.book, _dataId);
   }
 
   @override
@@ -260,10 +257,10 @@ class _PDFBookState extends State<PDFBook> {
                   ),
                   IconButton(
                     onPressed: () {
-                      setState(() {
-                        bookmarkList.removeWhere((element) => element.id == bookmark.id);
-                      });
-                      //_removeIconFromList(bookmark.id, bookmark.dataId);
+                      //setState(() {
+                      // bookmarkList.removeWhere((element) => element.id == bookmark.id);
+                      //});
+                      _removeIconFromList(bookmark.id, bookmark.dataId);
                     },
                     icon: const Icon(Icons.delete),
                   ),
