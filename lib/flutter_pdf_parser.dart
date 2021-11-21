@@ -142,7 +142,12 @@ class _PDFBookState extends State<PDFBook> {
     Navigator.pop(context);
   }
 
-  void _fillIconList(String cfi, bool _isNote, String _note, int _id) {
+  void _fillIconList(
+    String cfi,
+    bool _isNote,
+    String _note,
+    int _id,
+  ) {
     setState(() {
       var tmp = AlexandrioBookmark(
           pos: cfi,
@@ -155,6 +160,7 @@ class _PDFBookState extends State<PDFBook> {
           note: _note,
           dataId: '');
       bookmarkList.add(tmp);
+      _alexandrioController.postUserData(widget.token, widget.library, widget.book, _isNote ? 'note' : 'bookmark', _note, _isNote ? 'note' : 'bookmark', cfi);
     });
   }
 
@@ -172,9 +178,10 @@ class _PDFBookState extends State<PDFBook> {
     _flutterpdf = PdfController(document: PdfDocument.openData(widget.bytes), initialPage: page);
     _textEditingController = TextEditingController();
     _initBookmarkList().then((tmp) {
-      if (bookmarkList.isNotEmpty) {
-        _alexandrioController.deleteAllUserData(widget.token, widget.library, widget.book);
-      }
+      // if (bookmarkList.isNotEmpty) {
+      //   _alexandrioController.deleteAllUserData(
+      //       widget.token, widget.library, widget.book);
+      // }
     });
     super.initState();
   }
@@ -197,9 +204,6 @@ class _PDFBookState extends State<PDFBook> {
             onPressed: () {
               var progression = _flutterpdf.page;
               _alexandrioController.postProgression(widget.token, widget.book, widget.library, progression.toString());
-              bookmarkList.forEach((element) {
-                _alexandrioController.postUserData(widget.token, widget.library, widget.book, element.isNote ? 'note' : 'bookmark', element.note, element.isNote ? 'note' : 'bookmark', element.pos!);
-              });
               Navigator.of(context).pop();
             },
             icon: const Icon(Icons.arrow_back),
