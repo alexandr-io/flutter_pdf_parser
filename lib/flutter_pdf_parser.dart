@@ -172,10 +172,9 @@ class _PDFBookState extends State<PDFBook> {
     _flutterpdf = PdfController(document: PdfDocument.openData(widget.bytes), initialPage: page);
     _textEditingController = TextEditingController();
     _initBookmarkList().then((tmp) {
-      // if (bookmarkList.isNotEmpty) {
-      //   _alexandrioController.deleteAllUserData(
-      //       widget.token, widget.library, widget.book);
-      // }
+      if (bookmarkList.isNotEmpty) {
+        _alexandrioController.deleteAllUserData(widget.token, widget.library, widget.book);
+      }
     });
     super.initState();
   }
@@ -257,9 +256,7 @@ class _PDFBookState extends State<PDFBook> {
                   ),
                   IconButton(
                     onPressed: () {
-                      //setState(() {
-                      // bookmarkList.removeWhere((element) => element.id == bookmark.id);
-                      //});
+                      //_alexandrioController.deleteUserData(widget.token, widget.library, widget.book, bookmark.dataId);
                       _removeIconFromList(bookmark.id, bookmark.dataId);
                     },
                     icon: const Icon(Icons.delete),
@@ -281,13 +278,11 @@ class _PDFBookState extends State<PDFBook> {
               behavior: HitTestBehavior.translucent,
               onLongPressStart: (LongPressStartDetails details) {
                 //_showBookmarkOptions(),
-                print('helli');
                 setState(() {
                   isLongPressed = true;
                 });
               },
               onTap: () {
-                print('22222222222222222');
                 setState(() {
                   isLongPressed = false;
                 });
