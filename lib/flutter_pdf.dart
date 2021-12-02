@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class AlexandrioAPIController {
   Future<void> postProgression(String token, String book, String library, String? progress) async {
-    var response = await http.post(Uri.parse('https://library.prod.alexandrio.cloud/library/$library/book/$book/progress'),
+    var response = await http.post(Uri.parse('https://library.alexandrio.cloud/library/$library/book/$book/progress'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -16,7 +16,7 @@ class AlexandrioAPIController {
   }
 
   Future<List<List<String>>> getAllUserData(String token, String libraryId, String bookId) async {
-    var response = await http.get(Uri.parse('https://library.prod.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {
+    var response = await http.get(Uri.parse('https://library.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     });
@@ -43,19 +43,19 @@ class AlexandrioAPIController {
   }
 
   Future<void> deleteAllUserData(String token, String libraryId, String bookId) async {
-    var response = await http.delete(Uri.parse('https://library.prod.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'});
+    var response = await http.delete(Uri.parse('https://library.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'});
 
     if (response.statusCode != 200) throw 'Couldn\'t delete all data';
   }
 
   Future<void> postUserData(String token, String libraryId, String bookId, String type, String description, String name, String offset) async {
-    var response = await http.post(Uri.parse('https://library.prod.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'}, body: jsonEncode({"name": description.isEmpty ? type : description, "offset": offset, "description": description, "type": type}));
+    var response = await http.post(Uri.parse('https://library.alexandrio.cloud/library/$libraryId/book/$bookId/data'), headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'}, body: jsonEncode({"name": description.isEmpty ? type : description, "offset": offset, "description": description, "type": type}));
 
     if (response.statusCode != 201) throw 'Couldn\'t create data';
   }
 
   void deleteUserData(String token, String libraryId, String bookId, String dataId) async {
-    var response = await http.delete(Uri.parse('https://library.prod.alexandrio.cloud/library/$libraryId/book/$bookId/data/$dataId'), headers: {
+    var response = await http.delete(Uri.parse('https://library.alexandrio.cloud/library/$libraryId/book/$bookId/data/$dataId'), headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     });
