@@ -11,8 +11,6 @@ class AlexandrioAPIController {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({"progress": progress}));
-
-    if (response.statusCode != 200) throw 'Coudn\'t update progress';
   }
 
   Future<List<List<String>>> getAllUserData(String token, String libraryId, String bookId) async {
